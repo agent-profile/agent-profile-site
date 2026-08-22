@@ -80,7 +80,7 @@ test("exposes exact navigation destinations and visible keyboard focus", async (
     page.getByRole("link", { name: "View on GitHub (external)" }),
   ).toHaveAttribute(
     "href",
-    "https://github.com/agent-profile/agent-profile-site",
+    "https://github.com/agent-profile/agent-profile-spec",
   );
   const footerNavigation = page.getByRole("navigation", { name: "Footer" });
   for (const name of [

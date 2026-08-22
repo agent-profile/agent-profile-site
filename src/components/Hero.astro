@@ -10,7 +10,7 @@ interface Props {
       summary: string;
     };
     actions: { primary: string; secondary: string };
-    links: { specification: string; siteRepository: string };
+    links: { specification: string; specRepository: string };
     labels: {
       external: string;
       manifestFilename: string;
@@ -37,7 +37,7 @@ const { content } = Astro.props;
         {content.actions.primary}<span aria-hidden="true">↗</span>
         <span class="sr-only">{content.labels.external}</span>
       </a>
-      <a class="button secondary" href={content.links.siteRepository}>
+      <a class="button secondary" href={content.links.specRepository}>
         {content.actions.secondary}<span aria-hidden="true">↗</span>
         <span class="sr-only">{content.labels.external}</span>
       </a>

@@ -123,6 +123,7 @@ test("the build has a restrictive CSP and no executable or remote assets", async
     "default-src 'none'",
     "style-src 'self'",
     "img-src 'self'",
+    "connect-src 'self'",
     "base-uri 'none'",
     "form-action 'none'",
   ]) {

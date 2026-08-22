@@ -32,6 +32,15 @@ test("serves the page and exact versioned schema over HTTP", async ({
   expect((await request.get("%2e%2e%2fpackage.json")).status()).toBe(400);
 });
 
+test("serves robots.txt as plain text", async ({ request }) => {
+  const response = await request.get("robots.txt");
+
+  expect(response.ok()).toBe(true);
+  expect(response.headers()["content-type"]).toContain(
+    "text/plain; charset=utf-8",
+  );
+});
+
 test("exposes exact navigation destinations and visible keyboard focus", async ({
   page,
 }) => {

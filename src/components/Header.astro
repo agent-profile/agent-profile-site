@@ -3,6 +3,14 @@ interface Props {
   content: {
     project: { name: string; version: string };
     links: { specification: string; specRepository: string };
+    labels: {
+      home: string;
+      primaryNavigation: string;
+      specification: string;
+      schema: string;
+      github: string;
+      external: string;
+    };
   };
 }
 
@@ -12,19 +20,21 @@ const schemaHref = `${base}schemas/0.0.1/profile.schema.json`;
 ---
 
 <header class="site-header shell">
-  <a class="brand" href={base} aria-label="Agent Profile home">
+  <a class="brand" href={base} aria-label={content.labels.home}>
     <img src={`${base}favicon.svg`} alt="" width="36" height="36" />
     <span>{content.project.name}</span>
   </a>
-  <nav aria-label="Primary">
+  <nav aria-label={content.labels.primaryNavigation}>
     <a href={content.links.specification}>
-      Specification {content.project.version}<span aria-hidden="true">↗</span>
-      <span class="sr-only"> (external)</span>
+      {content.labels.specification}
+      {" "}
+      {content.project.version}<span aria-hidden="true">↗</span>
+      <span class="sr-only">{content.labels.external}</span>
     </a>
-    <a href={schemaHref}>JSON Schema</a>
+    <a href={schemaHref}>{content.labels.schema}</a>
     <a href={content.links.specRepository}>
-      GitHub<span aria-hidden="true">↗</span>
-      <span class="sr-only"> (external)</span>
+      {content.labels.github}<span aria-hidden="true">↗</span>
+      <span class="sr-only">{content.labels.external}</span>
     </a>
   </nav>
 </header>

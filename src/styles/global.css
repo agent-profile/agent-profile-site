@@ -285,6 +285,11 @@ h3 {
   tab-size: 2;
 }
 
+.manifest pre:focus-visible {
+  outline-color: var(--code-ink);
+  outline-offset: -4px;
+}
+
 .anatomy {
   display: grid;
   min-width: 0;

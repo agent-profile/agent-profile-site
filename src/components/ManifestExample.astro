@@ -1,15 +1,16 @@
 ---
 interface Props {
   manifest: Record<string, unknown>;
+  labels: { manifestFilename: string; manifestExample: string };
 }
 
-const { manifest } = Astro.props;
+const { manifest, labels } = Astro.props;
 const manifestJson = JSON.stringify(manifest, null, 2);
 ---
 
 <figure class="manifest">
-  <figcaption><code>profile.json</code></figcaption>
+  <figcaption><code>{labels.manifestFilename}</code></figcaption>
   <pre
-    aria-label="Example profile.json"
+    aria-label={labels.manifestExample}
     tabindex="0"><code>{manifestJson}</code></pre>
 </figure>

@@ -7,15 +7,16 @@ interface Item {
 
 interface Props {
   items: Item[];
+  labels: { anatomyEyebrow: string; anatomyHeading: string };
 }
 
-const { items } = Astro.props;
+const { items, labels } = Astro.props;
 ---
 
 <section class="anatomy shell" aria-labelledby="anatomy-title">
   <div class="section-heading">
-    <p class="eyebrow">Profile anatomy</p>
-    <h2 id="anatomy-title">What a profile describes</h2>
+    <p class="eyebrow">{labels.anatomyEyebrow}</p>
+    <h2 id="anatomy-title">{labels.anatomyHeading}</h2>
   </div>
   <ol class="anatomy-list">
     {

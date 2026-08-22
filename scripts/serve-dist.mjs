@@ -84,20 +84,30 @@ const server = http.createServer(async (request, response) => {
     return;
   }
 
+  let currentPath = distDir;
   let fileStat;
-  try {
-    fileStat = await lstat(filePath);
-  } catch (error) {
-    if (error && error.code === "ENOENT") {
+  const fileSegments = relativeFile.split("/");
+  for (const [index, segment] of fileSegments.entries()) {
+    currentPath = path.join(currentPath, segment);
+    try {
+      fileStat = await lstat(currentPath);
+    } catch (error) {
+      if (error && ["ENOENT", "ENOTDIR"].includes(error.code)) {
+        send(response, 404, "Not found.\n");
+        return;
+      }
+      send(response, 500, "Internal server error.\n");
+      return;
+    }
+
+    const isLast = index === fileSegments.length - 1;
+    if (
+      fileStat.isSymbolicLink() ||
+      (isLast ? !fileStat.isFile() : !fileStat.isDirectory())
+    ) {
       send(response, 404, "Not found.\n");
       return;
     }
-    send(response, 500, "Internal server error.\n");
-    return;
-  }
-  if (!fileStat.isFile() || fileStat.isSymbolicLink()) {
-    send(response, 404, "Not found.\n");
-    return;
   }
 
   response.writeHead(200, {

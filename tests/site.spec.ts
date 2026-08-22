@@ -1,4 +1,6 @@
 import { createHash } from "node:crypto";
+import { rm, symlink } from "node:fs/promises";
+import path from "node:path";
 
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
@@ -41,13 +43,29 @@ test("serves robots.txt as plain text", async ({ request }) => {
   );
 });
 
+test("does not serve through symlinked ancestor directories", async ({
+  request,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop");
+  const linkPath = path.join(process.cwd(), "dist", "__escape__");
+  await rm(linkPath, { force: true });
+  await symlink(process.cwd(), linkPath);
+
+  try {
+    expect((await request.get("__escape__/package.json")).status()).toBe(404);
+  } finally {
+    await rm(linkPath, { force: true });
+  }
+});
+
 test("exposes exact navigation destinations and visible keyboard focus", async ({
   page,
 }) => {
   await page.goto("./");
 
+  const primaryNavigation = page.getByRole("navigation", { name: "Primary" });
   await expect(
-    page.getByRole("link", {
+    primaryNavigation.getByRole("link", {
       name: "Specification 0.0.1 (external)",
       exact: true,
     }),
@@ -64,6 +82,14 @@ test("exposes exact navigation destinations and visible keyboard focus", async (
     "href",
     "https://github.com/agent-profile/agent-profile-site",
   );
+  const footerNavigation = page.getByRole("navigation", { name: "Footer" });
+  for (const name of [
+    "Specification 0.0.1 (external)",
+    "GitHub (external)",
+    "Licensing (external)",
+  ]) {
+    await expect(footerNavigation.getByRole("link", { name })).toHaveCount(1);
+  }
 
   await page.keyboard.press("Tab");
   await expect(
@@ -95,6 +121,40 @@ test("exposes exact navigation destinations and visible keyboard focus", async (
     expect(focusStyle.width).toBeGreaterThanOrEqual(3);
     if (index < focusableCount - 1) await page.keyboard.press("Tab");
   }
+
+  const manifestFocus = await page
+    .locator(".manifest pre")
+    .evaluate((element) => {
+      element.focus();
+      const style = getComputedStyle(element);
+      const surface = getComputedStyle(element.parentElement!).backgroundColor;
+      const channels = (color: string) =>
+        color
+          .match(/[\d.]+/g)!
+          .slice(0, 3)
+          .map(Number);
+      const luminance = (color: string) => {
+        const linear = channels(color).map((channel) => {
+          const normalized = channel / 255;
+          return normalized <= 0.04045
+            ? normalized / 12.92
+            : ((normalized + 0.055) / 1.055) ** 2.4;
+        });
+        const [red = 0, green = 0, blue = 0] = linear;
+        return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+      };
+      const foreground = luminance(style.outlineColor);
+      const background = luminance(surface);
+
+      return {
+        contrast:
+          (Math.max(foreground, background) + 0.05) /
+          (Math.min(foreground, background) + 0.05),
+        offset: Number.parseFloat(style.outlineOffset),
+      };
+    });
+  expect(manifestFocus.contrast).toBeGreaterThanOrEqual(3);
+  expect(manifestFocus.offset).toBeLessThanOrEqual(-3);
 });
 
 test("has no accessibility violations, client scripts, console errors, or remote requests", async ({

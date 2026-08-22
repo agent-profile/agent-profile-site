@@ -17,6 +17,42 @@ async function readJson(relativePath) {
   );
 }
 
+function collectStrings(value) {
+  if (typeof value === "string") return [value];
+  if (Array.isArray(value)) return value.flatMap(collectStrings);
+  if (value && typeof value === "object") {
+    return Object.values(value).flatMap(collectStrings);
+  }
+  return [];
+}
+
+function assertSyntheticManifest(manifest) {
+  const canonicalSchema =
+    "https://agentprofile.org/schemas/0.0.1/profile.schema.json";
+
+  for (const value of collectStrings(manifest)) {
+    assert.doesNotMatch(value, /agents\.e2a\.dev|@tokencanopy\.com/i);
+
+    if (/^[^\s@]+@[^\s@]+$/.test(value)) {
+      assert.match(value, /@(?:[a-z0-9-]+\.)*example\.com$/i);
+      continue;
+    }
+    if (!/^[A-Za-z][A-Za-z0-9+.-]*:/.test(value)) continue;
+    if (value === canonicalSchema || value.startsWith("urn:uuid:")) continue;
+
+    const uri = new URL(value);
+    if (["http:", "https:", "spiffe:"].includes(uri.protocol)) {
+      assert.match(uri.hostname, /^(?:[a-z0-9-]+\.)*example\.com$/i);
+    } else if (uri.protocol === "mailto:") {
+      assert.match(uri.pathname, /@(?:[a-z0-9-]+\.)*example\.com$/i);
+    } else if (["sms:", "tel:"].includes(uri.protocol)) {
+      assert.match(uri.pathname, /^\+120255501\d{2}$/);
+    } else {
+      assert.fail(`Unsupported public fixture URI scheme: ${uri.protocol}`);
+    }
+  }
+}
+
 test("the example manifest validates against the mirrored 0.0.1 schema", async () => {
   const [content, schema] = await Promise.all([
     readJson("src/content/site.json"),
@@ -67,26 +103,57 @@ test("the page copy preserves the reviewed claims and editorial limits", async (
 
 test("the public example contains synthetic identities and contacts only", async () => {
   const { manifest } = await readJson("src/content/site.json");
-  const serialized = JSON.stringify(manifest);
-
-  assert.doesNotMatch(serialized, /agents\.e2a\.dev/i);
-  assert.doesNotMatch(serialized, /@tokencanopy\.com/i);
-  assert.match(manifest.owner.email, /@example\.com$/);
-  assert.equal(new URL(manifest.owner.url).hostname, "example.com");
-
-  for (const contact of manifest.contacts) {
-    const contactUri = new URL(contact);
-    if (contactUri.protocol === "mailto:") {
-      assert.match(contactUri.pathname, /@example\.com$/);
-    } else {
-      assert.match(contactUri.pathname, /^\+12025550123$/);
-    }
-  }
-
-  const issuer = manifest.identifiers.find(
-    ({ type }) => type === "issuer-subject",
+  assertSyntheticManifest(manifest);
+  assert.throws(() =>
+    assertSyntheticManifest({
+      ...manifest,
+      extensions: { "example.com": { nested: "https://real.example.net/id" } },
+    }),
   );
-  assert.equal(new URL(issuer.issuer).hostname, "identity.example.com");
+});
+
+test("user-facing prose stays in the CC-licensed content model", async () => {
+  const content = await readJson("src/content/site.json");
+  assert.ok(content.labels, "content must define shared interface labels");
+  assert.ok(content.meta?.title, "content must define the document title");
+
+  const source = await Promise.all(
+    [
+      "src/pages/index.astro",
+      "src/layouts/BaseLayout.astro",
+      "src/components/Header.astro",
+      "src/components/ManifestExample.astro",
+      "src/components/ProfileAnatomy.astro",
+      "src/components/TrustBoundary.astro",
+      "src/components/Influences.astro",
+      "src/components/SiteFooter.astro",
+    ].map((file) => readFile(path.join(repositoryRoot, file), "utf8")),
+  ).then((files) => files.join("\n"));
+
+  for (const literal of [
+    "Open standard for portable agent profiles",
+    "Skip to main content",
+    "Agent Profile home",
+    'aria-label="Primary"',
+    ">JSON Schema<",
+    ">GitHub<",
+    "(external)",
+    "<code>profile.json</code>",
+    'aria-label="Example profile.json"',
+    ">Profile anatomy<",
+    ">What a profile describes<",
+    ">Trust boundary<",
+    ">Participate<",
+    ">Influences<",
+    'aria-label="Footer"',
+    ">Licensing<",
+  ]) {
+    assert.equal(
+      source.includes(literal),
+      false,
+      `Astro source contains ${literal}`,
+    );
+  }
 });
 
 test("all project and influence destinations are explicit HTTPS links", async () => {

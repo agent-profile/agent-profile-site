@@ -11,6 +11,11 @@ interface Props {
     };
     actions: { primary: string; secondary: string };
     links: { specification: string; siteRepository: string };
+    labels: {
+      external: string;
+      manifestFilename: string;
+      manifestExample: string;
+    };
     manifest: Record<string, unknown>;
   };
 }
@@ -30,13 +35,13 @@ const { content } = Astro.props;
     <div class="actions">
       <a class="button primary" href={content.links.specification}>
         {content.actions.primary}<span aria-hidden="true">↗</span>
-        <span class="sr-only"> (external)</span>
+        <span class="sr-only">{content.labels.external}</span>
       </a>
       <a class="button secondary" href={content.links.siteRepository}>
         {content.actions.secondary}<span aria-hidden="true">↗</span>
-        <span class="sr-only"> (external)</span>
+        <span class="sr-only">{content.labels.external}</span>
       </a>
     </div>
   </div>
-  <ManifestExample manifest={content.manifest} />
+  <ManifestExample manifest={content.manifest} labels={content.labels} />
 </section>

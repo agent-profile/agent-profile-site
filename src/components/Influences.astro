@@ -9,6 +9,11 @@ interface Props {
     development: { heading: string; body: string };
     influences: Influence[];
     links: { agentPlugins: string; mcp: string; tokenCanopy: string };
+    labels: {
+      participateEyebrow: string;
+      influencesHeading: string;
+      external: string;
+    };
   };
 }
 
@@ -29,12 +34,12 @@ function influenceLink(name: string): string {
 
 <section class="development shell" aria-labelledby="development-title">
   <div class="development-copy">
-    <p class="eyebrow">Participate</p>
+    <p class="eyebrow">{content.labels.participateEyebrow}</p>
     <h2 id="development-title">{content.development.heading}</h2>
     <p>{content.development.body}</p>
   </div>
   <div class="influences" aria-labelledby="influences-title">
-    <h3 id="influences-title">Influences</h3>
+    <h3 id="influences-title">{content.labels.influencesHeading}</h3>
     <dl>
       {
         content.influences.map((influence) => (
@@ -43,7 +48,7 @@ function influenceLink(name: string): string {
               <a href={influenceLink(influence.name)}>
                 {influence.name}
                 <span aria-hidden="true">↗</span>
-                <span class="sr-only"> (external)</span>
+                <span class="sr-only">{content.labels.external}</span>
               </a>
             </dt>
             <dd>{influence.body}</dd>

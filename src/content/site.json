@@ -6,6 +6,27 @@
     "headline": "An open standard for portable agent profiles.",
     "summary": "Agent Profile is an open, vendor-neutral standard for a portable directory package describing one durable logical AI agent. A profile can name an owner, list contact methods, associate external identifiers, and bundle Agent Plugins. Those values are metadata claims, not credentials or proof."
   },
+  "meta": {
+    "title": "Agent Profile — Open standard for portable agent profiles"
+  },
+  "labels": {
+    "skipToMain": "Skip to main content",
+    "home": "Agent Profile home",
+    "primaryNavigation": "Primary",
+    "specification": "Specification",
+    "schema": "JSON Schema",
+    "github": "GitHub",
+    "external": " (external)",
+    "manifestFilename": "profile.json",
+    "manifestExample": "Example profile.json",
+    "anatomyEyebrow": "Profile anatomy",
+    "anatomyHeading": "What a profile describes",
+    "trustEyebrow": "Trust boundary",
+    "participateEyebrow": "Participate",
+    "influencesHeading": "Influences",
+    "footerNavigation": "Footer",
+    "licensing": "Licensing"
+  },
   "links": {
     "specification": "https://github.com/agent-profile/agent-profile-spec/blob/6e56a3c3e1e8684d1b280374a92d4801dababb03/spec/0.0.1.md",
     "specRepository": "https://github.com/agent-profile/agent-profile-spec",

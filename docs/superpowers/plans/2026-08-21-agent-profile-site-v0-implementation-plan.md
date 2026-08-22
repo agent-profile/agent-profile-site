@@ -490,7 +490,7 @@ Also assert:
 - every internal link resolves inside `dist/`;
 - blank-target links include `noopener noreferrer`;
 - no `script`, `iframe`, `form`, `video`, remote image/font, `client:*` marker, or Astro island;
-- CSP contains the five required directives;
+- CSP contains the six required directives;
 - built schema bytes equal the committed mirror;
 - all `dist/` bytes except the schema total at most 150 KiB uncompressed.
 
@@ -503,8 +503,12 @@ Run `npm test`. Expected: FAIL because no page exists.
 Use this exact CSP:
 
 ```text
-default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'
+default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'
 ```
+
+`connect-src 'self'` permits standards tooling to retrieve the same-origin
+`robots.txt` resource while every executable source remains blocked. It does
+not permit third-party connections.
 
 Use `Astro.site` for canonical metadata, not the temporary project-path base.
 

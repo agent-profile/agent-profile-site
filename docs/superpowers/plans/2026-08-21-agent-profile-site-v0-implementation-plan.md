@@ -26,27 +26,27 @@
 
 Use these exact dependency releases in `package.json`:
 
-| Package | Version |
-| --- | --- |
-| `astro` | `7.2.4` |
-| `@astrojs/check` | `0.9.10` |
-| `typescript` | `6.0.3` |
-| `prettier` | `3.9.6` |
+| Package                 | Version  |
+| ----------------------- | -------- |
+| `astro`                 | `7.2.4`  |
+| `@astrojs/check`        | `0.9.10` |
+| `typescript`            | `6.0.3`  |
+| `prettier`              | `3.9.6`  |
 | `prettier-plugin-astro` | `0.14.1` |
-| `ajv` | `8.20.0` |
-| `@playwright/test` | `1.62.1` |
-| `@axe-core/playwright` | `4.13.0` |
-| `yaml` | `2.9.0` |
+| `ajv`                   | `8.20.0` |
+| `@playwright/test`      | `1.62.1` |
+| `@axe-core/playwright`  | `4.13.0` |
+| `yaml`                  | `2.9.0`  |
 
 Pin reusable actions to these immutable revisions, retaining the readable release comment:
 
-| Action | Revision |
-| --- | --- |
-| `actions/checkout` | `3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1` |
-| `actions/setup-node` | `820762786026740c76f36085b0efc47a31fe5020 # v7.0.0` |
-| `actions/configure-pages` | `45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0` |
+| Action                          | Revision                                            |
+| ------------------------------- | --------------------------------------------------- |
+| `actions/checkout`              | `3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1` |
+| `actions/setup-node`            | `820762786026740c76f36085b0efc47a31fe5020 # v7.0.0` |
+| `actions/configure-pages`       | `45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0` |
 | `actions/upload-pages-artifact` | `fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0` |
-| `actions/deploy-pages` | `cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0` |
+| `actions/deploy-pages`          | `cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0` |
 
 ## Final File Map
 
@@ -67,6 +67,7 @@ astro.config.mjs
 package-lock.json
 package.json
 playwright.config.ts
+prettier.config.mjs
 public/favicon.svg
 public/robots.txt
 public/schemas/0.0.1/profile.schema.json
@@ -98,7 +99,7 @@ Keep the approved design and this plan under `docs/superpowers/`.
 
 ### Task 1: Bootstrap the static Astro project and license boundaries
 
-**Files:** Create `.gitignore`, `.nvmrc`, `.prettierignore`, `package.json`, `package-lock.json`, `astro.config.mjs`, `tsconfig.json`, `LICENSE.md`, `LICENSES/*`, and `README.md`.
+**Files:** Create `.gitignore`, `.nvmrc`, `.prettierignore`, `package.json`, `package-lock.json`, `astro.config.mjs`, `prettier.config.mjs`, `tsconfig.json`, `LICENSE.md`, `LICENSES/*`, and `README.md`.
 
 - [ ] **Step 1: Confirm the implementation base and authorship**
 
@@ -124,10 +125,10 @@ Create `package.json`:
     "node": ">=24.15.0 <25"
   },
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "check": "astro check",
+    "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
+    "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
+    "check": "ASTRO_TELEMETRY_DISABLED=1 astro check",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "verify:schema": "node scripts/verify-schema-provenance.mjs",
@@ -148,7 +149,7 @@ Create `package.json`:
 }
 ```
 
-Set `.nvmrc` to `24`. Ignore `node_modules/`, `dist/`, `.astro/`, `playwright-report/`, `test-results/`, and `.upstream/`. Prettier must ignore generated paths and the two verbatim license texts.
+Set `.nvmrc` to `24`. Ignore `node_modules/`, `dist/`, `.astro/`, `playwright-report/`, `test-results/`, and `.upstream/`. Prettier must ignore those generated paths, `.superpowers/`, and the two verbatim license texts. Add `prettier.config.mjs` to load `prettier-plugin-astro` and select the `astro` parser for `*.astro` files.
 
 - [ ] **Step 3: Configure Astro as a zero-JavaScript static compiler**
 
@@ -166,8 +167,8 @@ export default defineConfig({
   trailingSlash: "always",
   build: {
     format: "directory",
-    inlineStylesheets: "never"
-  }
+    inlineStylesheets: "never",
+  },
 });
 ```
 
@@ -223,7 +224,7 @@ Document the canonical origin, temporary Pages rollout, normative spec repo, Nod
 npm run format:check
 npm run check
 git diff --check
-git add .gitignore .nvmrc .prettierignore package.json package-lock.json astro.config.mjs tsconfig.json LICENSE.md LICENSES README.md docs/superpowers
+git add .gitignore .nvmrc .prettierignore package.json package-lock.json astro.config.mjs prettier.config.mjs tsconfig.json LICENSE.md LICENSES README.md docs/superpowers
 git commit -m "chore(site): bootstrap Astro project"
 ```
 
@@ -253,7 +254,7 @@ Import the intended API:
 import {
   loadSchemaLock,
   sha256File,
-  verifySchemaProvenance
+  verifySchemaProvenance,
 } from "../scripts/schema-provenance.mjs";
 ```
 
@@ -512,7 +513,7 @@ The adjacent project name supplies the visible label: use an empty image `alt` a
 The header renders the mark/name home link, `Specification 0.0.1`, `JSON Schema` at:
 
 ```js
-`${import.meta.env.BASE_URL}schemas/0.0.1/profile.schema.json`
+`${import.meta.env.BASE_URL}schemas/0.0.1/profile.schema.json`;
 ```
 
 and `GitHub`. External links stay in the same tab unless there is a reason not to; any blank target must have safe rel values and accessible external-link context.
@@ -596,17 +597,17 @@ export default defineConfig({
   reporter: process.env.CI ? "github" : "list",
   use: {
     baseURL: `http://127.0.0.1:4321${basePath}`,
-    trace: "retain-on-failure"
+    trace: "retain-on-failure",
   },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile", use: { ...devices["iPhone 13"] } }
+    { name: "mobile", use: { ...devices["iPhone 13"] } },
   ],
   webServer: {
     command: "npm run preview -- --host 127.0.0.1 --port 4321",
     port: 4321,
-    reuseExistingServer: !process.env.CI
-  }
+    reuseExistingServer: !process.env.CI,
+  },
 });
 ```
 
@@ -631,7 +632,8 @@ Start `global.css` with:
   --rule: #c9bda9;
   --code: #102c2e;
   --code-ink: #f5efe5;
-  --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+  --sans:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
   --serif: Iowan Old Style, Baskerville, "Times New Roman", serif;
   --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;

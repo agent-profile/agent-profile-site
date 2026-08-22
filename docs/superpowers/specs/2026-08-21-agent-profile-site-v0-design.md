@@ -237,7 +237,7 @@ Required editorial rules:
 - Use natural paragraph structure instead of repetitive icon-card formulas.
 - Avoid rhetorical questions, inflated transitions, and stacked abstract nouns.
 - Do not use phrases such as `unlock`, `seamless`, `revolutionary`, `the future
-  of AI`, `powerful`, or `built for what's next`.
+of AI`, `powerful`, or `built for what's next`.
 - Do not add fake adoption claims, metrics, testimonials, partners, or maturity
   signals.
 - Read the final copy aloud and remove sentences that sound interchangeable with

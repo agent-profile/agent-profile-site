@@ -506,9 +506,10 @@ Use this exact CSP:
 default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'
 ```
 
-`connect-src 'self'` permits standards tooling to retrieve the same-origin
-`robots.txt` resource while every executable source remains blocked. It does
-not permit third-party connections.
+`connect-src 'self'` is required for Lighthouse's robots gatherer, which fetches
+the same-origin resource through the audited page's network context and reports
+a CSP violation without this directive. It does not affect ordinary crawler
+access, permit third-party connections, or enable executable sources.
 
 Use `Astro.site` for canonical metadata, not the temporary project-path base.
 

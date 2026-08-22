@@ -168,3 +168,36 @@ test("all project and influence destinations are explicit HTTPS links", async ()
     ["Agent Plugins", "Model Context Protocol", "Token Canopy"],
   );
 });
+
+test("agent discovery files identify the canonical site and current standard", async () => {
+  const [content, robots, sitemap, llms, markdown] = await Promise.all([
+    readJson("src/content/site.json"),
+    readFile(path.join(repositoryRoot, "public/robots.txt"), "utf8"),
+    readFile(path.join(repositoryRoot, "public/sitemap.xml"), "utf8"),
+    readFile(path.join(repositoryRoot, "public/llms.txt"), "utf8"),
+    readFile(path.join(repositoryRoot, "public/index.md"), "utf8"),
+  ]);
+
+  assert.equal(
+    robots,
+    "User-agent: *\nAllow: /\n\nSitemap: https://agentprofile.org/sitemap.xml\n",
+  );
+  assert.match(sitemap, /<loc>https:\/\/agentprofile\.org\/<\/loc>/);
+  assert.equal((sitemap.match(/<url>/g) || []).length, 1);
+
+  for (const document of [llms, markdown]) {
+    assert.match(document, /^# Agent Profile$/m);
+    assert.ok(document.includes(content.project.version));
+    assert.ok(document.includes(content.project.status));
+    assert.ok(document.includes(content.links.specification));
+    assert.ok(
+      document.includes(
+        "https://agentprofile.org/schemas/0.0.1/profile.schema.json",
+      ),
+    );
+    assert.doesNotMatch(document, /agents\.e2a\.dev|@tokencanopy\.com/i);
+  }
+
+  assert.match(llms, /^> Agent Profile is an open, vendor-neutral standard/m);
+  assert.match(markdown, /^## Trust boundary$/m);
+});

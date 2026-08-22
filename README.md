@@ -46,6 +46,20 @@ To update a published schema mirror:
 Never point the lock at a branch or moving tag. A digest or byte mismatch fails
 the build and Pages deployment.
 
+## Agent-readable discovery
+
+The site publishes a root `sitemap.xml` for search discovery, a concise
+`llms.txt` resource map, and an `index.md` Markdown alternate for agents that
+prefer plain text. The HTML advertises the agent resources with `describedby`
+and `alternate` link relations. `robots.txt` permits all crawlers, including
+search, user-requested retrieval, and model-training crawlers, and names the
+canonical sitemap.
+
+Keep these files aligned with the current Working Draft, pinned specification
+commit, and versioned schema whenever a new version is published. Search-engine
+submission remains an external release step after the canonical HTTPS origin is
+healthy.
+
 ## Deployment
 
 GitHub Actions builds and tests pull requests without deployment permissions.

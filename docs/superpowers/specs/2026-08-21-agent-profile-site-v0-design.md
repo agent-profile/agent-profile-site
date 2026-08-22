@@ -1,7 +1,7 @@
 # Agent Profile Website v0 Design
 
 **Date:** 2026-08-21
-**Status:** Proposed for written review
+**Status:** Approved
 **Repository:** `agent-profile/agent-profile-site`
 **Canonical origin:** `https://agentprofile.org/`
 
@@ -519,7 +519,7 @@ borrows only information-hierarchy lessons.
 
 ## Open questions
 
-No product or architecture questions remain. Implementation must resolve only
-versioned inputs that do not change this design: the current supported Astro
-and Node releases, the exact reviewed 0.0.1 specification commit, full action
-SHAs, and the domain's current DNS provider configuration.
+No product or architecture questions remain. The implementation plan pins the
+supported Astro and Node line, the exact reviewed 0.0.1 specification commit,
+its schema digest, and full action SHAs. The domain's current DNS provider is a
+rollout-time external discovery item; it does not change the site design.

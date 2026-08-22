@@ -186,8 +186,13 @@ test("agent discovery files identify the canonical site and current standard", a
   assert.match(sitemap, /<loc>https:\/\/agentprofile\.org\/<\/loc>/);
   assert.equal((sitemap.match(/<url>/g) || []).length, 1);
 
-  const schemaVersion = lock.files[0].source.split("/")[1];
-  const schemaUrl = `https://agentprofile.org/${lock.files[0].target.replace(/^public\//, "")}`;
+  const schemaVersion = content.project.version;
+  const schemaSource = `schemas/${schemaVersion}/profile.schema.json`;
+  const matchingSchemas = lock.files.filter(
+    (file) => file.source === schemaSource,
+  );
+  assert.equal(matchingSchemas.length, 1);
+  const schemaUrl = `https://agentprofile.org/${matchingSchemas[0].target.replace(/^public\//, "")}`;
   const specificationUrl = `https://github.com/${lock.repository}/blob/${lock.commit}/spec/${schemaVersion}.md`;
   assert.equal(content.project.version, schemaVersion);
   assert.equal(content.manifest.$schema, schemaUrl);

@@ -26,17 +26,18 @@
 
 Use these exact dependency releases in `package.json`:
 
-| Package                 | Version  |
-| ----------------------- | -------- |
-| `astro`                 | `7.2.4`  |
-| `@astrojs/check`        | `0.9.10` |
-| `typescript`            | `6.0.3`  |
-| `prettier`              | `3.9.6`  |
-| `prettier-plugin-astro` | `0.14.1` |
-| `ajv`                   | `8.20.0` |
-| `@playwright/test`      | `1.62.1` |
-| `@axe-core/playwright`  | `4.13.0` |
-| `yaml`                  | `2.9.0`  |
+| Package                 | Version   |
+| ----------------------- | --------- |
+| `astro`                 | `7.2.4`   |
+| `@astrojs/check`        | `0.9.10`  |
+| `typescript`            | `6.0.3`   |
+| `prettier`              | `3.9.6`   |
+| `prettier-plugin-astro` | `0.14.1`  |
+| `ajv`                   | `8.20.0`  |
+| `@playwright/test`      | `1.62.1`  |
+| `@axe-core/playwright`  | `4.13.0`  |
+| `@types/node`           | `24.13.3` |
+| `yaml`                  | `2.9.0`   |
 
 Pin reusable actions to these immutable revisions, retaining the readable release comment:
 
@@ -73,6 +74,7 @@ public/robots.txt
 public/schemas/0.0.1/profile.schema.json
 schemas.lock.json
 scripts/schema-provenance.mjs
+scripts/serve-dist.mjs
 scripts/verify-schema-provenance.mjs
 src/components/Header.astro
 src/components/Hero.astro
@@ -127,7 +129,7 @@ Create `package.json`:
   "scripts": {
     "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
     "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
-    "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
+    "preview": "node scripts/serve-dist.mjs",
     "check": "ASTRO_TELEMETRY_DISABLED=1 astro check",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -139,6 +141,7 @@ Create `package.json`:
     "@astrojs/check": "0.9.10",
     "@axe-core/playwright": "4.13.0",
     "@playwright/test": "1.62.1",
+    "@types/node": "24.13.3",
     "ajv": "8.20.0",
     "astro": "7.2.4",
     "prettier": "3.9.6",
@@ -178,7 +181,8 @@ Create `tsconfig.json`:
 {
   "extends": "astro/tsconfigs/strictest",
   "compilerOptions": {
-    "noUncheckedIndexedAccess": true
+    "noUncheckedIndexedAccess": true,
+    "types": ["node"]
   }
 }
 ```
@@ -601,15 +605,28 @@ export default defineConfig({
   },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile", use: { ...devices["iPhone 13"] } },
+    {
+      name: "mobile",
+      use: { ...devices["iPhone 13"], browserName: "chromium" },
+    },
   ],
   webServer: {
-    command: "npm run preview -- --host 127.0.0.1 --port 4321",
+    command: "npm run preview",
+    env: {
+      HOST: "127.0.0.1",
+      PORT: "4321",
+      TEST_BASE_PATH: configuredBasePath,
+    },
     port: 4321,
     reuseExistingServer: !process.env.CI,
   },
 });
 ```
+
+Astro 7 does not provide a usable static preview server for this zero-adapter
+site. `scripts/serve-dist.mjs` serves only regular files below `dist/`, supports
+the configured Pages base path, rejects traversal, and supplies deterministic
+HTML, CSS, JSON, and SVG content types for over-the-wire tests.
 
 Browser tests cover page/schema responses and content type, schema digest, exact destinations, tab order, visible focus, zero WCAG 2.2 A/AA axe violations, no console/page errors, same-origin requests only, zero scripts, no overflow at 320/375/768/1280 widths, 200% zoom, reduced motion, and coherent CSS-disabled content.
 

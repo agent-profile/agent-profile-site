@@ -96,13 +96,13 @@ test("exposes exact navigation destinations and visible keyboard focus", async (
     page.getByRole("link", { name: "Skip to main content" }),
   ).toBeFocused();
 
-  const focusableCount = await page.locator('a, pre[tabindex="0"]').count();
+  const focusableCount = await page.locator("a").count();
   for (let index = 0; index < focusableCount; index += 1) {
     expect(
       await page.evaluate(
         (expectedIndex) =>
           document.activeElement ===
-          document.querySelectorAll('a, pre[tabindex="0"]')[expectedIndex],
+          document.querySelectorAll("a")[expectedIndex],
         index,
       ),
     ).toBe(true);
@@ -121,40 +121,6 @@ test("exposes exact navigation destinations and visible keyboard focus", async (
     expect(focusStyle.width).toBeGreaterThanOrEqual(3);
     if (index < focusableCount - 1) await page.keyboard.press("Tab");
   }
-
-  const manifestFocus = await page
-    .locator(".manifest pre")
-    .evaluate((element) => {
-      element.focus();
-      const style = getComputedStyle(element);
-      const surface = getComputedStyle(element.parentElement!).backgroundColor;
-      const channels = (color: string) =>
-        color
-          .match(/[\d.]+/g)!
-          .slice(0, 3)
-          .map(Number);
-      const luminance = (color: string) => {
-        const linear = channels(color).map((channel) => {
-          const normalized = channel / 255;
-          return normalized <= 0.04045
-            ? normalized / 12.92
-            : ((normalized + 0.055) / 1.055) ** 2.4;
-        });
-        const [red = 0, green = 0, blue = 0] = linear;
-        return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
-      };
-      const foreground = luminance(style.outlineColor);
-      const background = luminance(surface);
-
-      return {
-        contrast:
-          (Math.max(foreground, background) + 0.05) /
-          (Math.min(foreground, background) + 0.05),
-        offset: Number.parseFloat(style.outlineOffset),
-      };
-    });
-  expect(manifestFocus.contrast).toBeGreaterThanOrEqual(3);
-  expect(manifestFocus.offset).toBeLessThanOrEqual(-3);
 });
 
 test("has no accessibility violations, client scripts, console errors, or remote requests", async ({
@@ -184,9 +150,49 @@ test("has no accessibility violations, client scripts, console errors, or remote
   expect([...requestOrigins]).toEqual([new URL(page.url()).origin]);
 });
 
-test("contains horizontal scrolling to code at narrow and enlarged viewports", async ({
+test("shows the full profile snippet without internal scrolling", async ({
   page,
 }) => {
+  const expectFullSnippet = async () => {
+    const metrics = await page.locator(".manifest").evaluate((figure) => {
+      const pre = figure.querySelector("pre");
+      const code = pre?.querySelector("code");
+      const text = code?.firstChild;
+      if (!(pre instanceof HTMLElement) || !(text instanceof Text)) {
+        throw new Error("Expected the profile example to contain text");
+      }
+
+      const finalCharacter = document.createRange();
+      finalCharacter.setStart(text, text.length - 1);
+      finalCharacter.setEnd(text, text.length);
+
+      return {
+        figureBottom: figure.getBoundingClientRect().bottom,
+        figureClientHeight: figure.clientHeight,
+        figureScrollHeight: figure.scrollHeight,
+        finalCharacterBottom: finalCharacter.getBoundingClientRect().bottom,
+        preBottom: pre.getBoundingClientRect().bottom,
+        preClientHeight: pre.clientHeight,
+        preClientWidth: pre.clientWidth,
+        preScrollHeight: pre.scrollHeight,
+        preScrollWidth: pre.scrollWidth,
+      };
+    });
+
+    expect(metrics.preScrollHeight).toBeLessThanOrEqual(
+      metrics.preClientHeight,
+    );
+    expect(metrics.preScrollWidth).toBeLessThanOrEqual(metrics.preClientWidth);
+    expect(metrics.figureScrollHeight).toBeLessThanOrEqual(
+      metrics.figureClientHeight,
+    );
+    expect(metrics.finalCharacterBottom).toBeLessThanOrEqual(metrics.preBottom);
+    expect(metrics.finalCharacterBottom).toBeLessThanOrEqual(
+      metrics.figureBottom,
+    );
+    await expect(page.locator("pre")).not.toHaveAttribute("tabindex");
+  };
+
   for (const width of [320, 375, 768, 1280]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("./");
@@ -195,13 +201,7 @@ test("contains horizontal scrolling to code at narrow and enlarged viewports", a
       scroll: document.documentElement.scrollWidth,
     }));
     expect(overflow.scroll).toBeLessThanOrEqual(overflow.client);
-    if (width === 320) {
-      const codeOverflow = await page.locator("pre").evaluate((element) => ({
-        client: element.clientWidth,
-        scroll: element.scrollWidth,
-      }));
-      expect(codeOverflow.scroll).toBeGreaterThan(codeOverflow.client);
-    }
+    await expectFullSnippet();
   }
 
   await page.setViewportSize({ width: 640, height: 900 });
@@ -214,6 +214,7 @@ test("contains horizontal scrolling to code at narrow and enlarged viewports", a
     scroll: document.documentElement.scrollWidth,
   }));
   expect(enlargedOverflow.scroll).toBeLessThanOrEqual(enlargedOverflow.client);
+  await expectFullSnippet();
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 });
 

@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify site
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out site
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Read schema lock
+        id: schema
+        shell: bash
+        run: |
+          node --input-type=module -e 'import lock from "./schemas.lock.json" with { type: "json" }; const commit = lock.commit; if (!/^[0-9a-f]{40}$/.test(commit)) process.exit(1); process.stdout.write(`commit=${commit}\n`);' >> "$GITHUB_OUTPUT"
+
+      - name: Check out specification
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: agent-profile/agent-profile-spec
+          ref: ${{ steps.schema.outputs.commit }}
+          path: .upstream/agent-profile-spec
+          persist-credentials: false
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Check Astro and TypeScript
+        run: npm run check
+
+      - name: Verify schema provenance
+        run: npm run verify:schema -- --upstream .upstream/agent-profile-spec
+
+      - name: Run unit and artifact tests
+        run: npm test
+
+      - name: Build site
+        run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser tests
+        run: npm run test:e2e

@@ -274,20 +274,15 @@ h3 {
 
 .manifest pre {
   max-width: 100%;
-  max-height: 34rem;
   margin: 0;
   padding: 1.25rem;
-  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   color: var(--code-ink);
   font-family: var(--mono);
   font-size: clamp(0.72rem, 0.68rem + 0.15vw, 0.82rem);
   line-height: 1.6;
   tab-size: 2;
-}
-
-.manifest pre:focus-visible {
-  outline-color: var(--code-ink);
-  outline-offset: -4px;
 }
 
 .anatomy {

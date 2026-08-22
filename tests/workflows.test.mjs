@@ -107,6 +107,7 @@ test("Pages deployment isolates write permissions behind a successful build", as
     group: "pages",
     "cancel-in-progress": false,
   });
+  assert.equal(workflow.jobs.build.if, "github.ref == 'refs/heads/main'");
   assert.deepEqual(workflow.jobs.build.permissions, {
     contents: "read",
     pages: "read",

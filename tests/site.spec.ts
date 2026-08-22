@@ -153,6 +153,46 @@ test("has no accessibility violations, client scripts, console errors, or remote
 test("shows the full profile snippet without internal scrolling", async ({
   page,
 }) => {
+  const expectFullSnippet = async () => {
+    const metrics = await page.locator(".manifest").evaluate((figure) => {
+      const pre = figure.querySelector("pre");
+      const code = pre?.querySelector("code");
+      const text = code?.firstChild;
+      if (!(pre instanceof HTMLElement) || !(text instanceof Text)) {
+        throw new Error("Expected the profile example to contain text");
+      }
+
+      const finalCharacter = document.createRange();
+      finalCharacter.setStart(text, text.length - 1);
+      finalCharacter.setEnd(text, text.length);
+
+      return {
+        figureBottom: figure.getBoundingClientRect().bottom,
+        figureClientHeight: figure.clientHeight,
+        figureScrollHeight: figure.scrollHeight,
+        finalCharacterBottom: finalCharacter.getBoundingClientRect().bottom,
+        preBottom: pre.getBoundingClientRect().bottom,
+        preClientHeight: pre.clientHeight,
+        preClientWidth: pre.clientWidth,
+        preScrollHeight: pre.scrollHeight,
+        preScrollWidth: pre.scrollWidth,
+      };
+    });
+
+    expect(metrics.preScrollHeight).toBeLessThanOrEqual(
+      metrics.preClientHeight,
+    );
+    expect(metrics.preScrollWidth).toBeLessThanOrEqual(metrics.preClientWidth);
+    expect(metrics.figureScrollHeight).toBeLessThanOrEqual(
+      metrics.figureClientHeight,
+    );
+    expect(metrics.finalCharacterBottom).toBeLessThanOrEqual(metrics.preBottom);
+    expect(metrics.finalCharacterBottom).toBeLessThanOrEqual(
+      metrics.figureBottom,
+    );
+    await expect(page.locator("pre")).not.toHaveAttribute("tabindex");
+  };
+
   for (const width of [320, 375, 768, 1280]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("./");
@@ -161,19 +201,7 @@ test("shows the full profile snippet without internal scrolling", async ({
       scroll: document.documentElement.scrollWidth,
     }));
     expect(overflow.scroll).toBeLessThanOrEqual(overflow.client);
-    const codeOverflow = await page.locator("pre").evaluate((element) => ({
-      clientHeight: element.clientHeight,
-      clientWidth: element.clientWidth,
-      scrollHeight: element.scrollHeight,
-      scrollWidth: element.scrollWidth,
-    }));
-    expect(codeOverflow.scrollHeight).toBeLessThanOrEqual(
-      codeOverflow.clientHeight,
-    );
-    expect(codeOverflow.scrollWidth).toBeLessThanOrEqual(
-      codeOverflow.clientWidth,
-    );
-    await expect(page.locator("pre")).not.toHaveAttribute("tabindex");
+    await expectFullSnippet();
   }
 
   await page.setViewportSize({ width: 640, height: 900 });
@@ -186,6 +214,7 @@ test("shows the full profile snippet without internal scrolling", async ({
     scroll: document.documentElement.scrollWidth,
   }));
   expect(enlargedOverflow.scroll).toBeLessThanOrEqual(enlargedOverflow.client);
+  await expectFullSnippet();
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 });
 

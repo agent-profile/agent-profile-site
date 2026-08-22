@@ -1,0 +1,13 @@
+---
+interface Props {
+  trust: { heading: string; body: string };
+}
+
+const { trust } = Astro.props;
+---
+
+<aside class="trust shell" aria-labelledby="trust-title">
+  <p class="eyebrow">Trust boundary</p>
+  <h2 id="trust-title">{trust.heading}</h2>
+  <p>{trust.body}</p>
+</aside>

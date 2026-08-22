@@ -1,0 +1,55 @@
+---
+interface Influence {
+  name: string;
+  body: string;
+}
+
+interface Props {
+  content: {
+    development: { heading: string; body: string };
+    influences: Influence[];
+    links: { agentPlugins: string; mcp: string; tokenCanopy: string };
+  };
+}
+
+const { content } = Astro.props;
+function influenceLink(name: string): string {
+  switch (name) {
+    case "Agent Plugins":
+      return content.links.agentPlugins;
+    case "Model Context Protocol":
+      return content.links.mcp;
+    case "Token Canopy":
+      return content.links.tokenCanopy;
+    default:
+      throw new Error(`Missing destination for influence: ${name}`);
+  }
+}
+---
+
+<section class="development shell" aria-labelledby="development-title">
+  <div class="development-copy">
+    <p class="eyebrow">Participate</p>
+    <h2 id="development-title">{content.development.heading}</h2>
+    <p>{content.development.body}</p>
+  </div>
+  <div class="influences" aria-labelledby="influences-title">
+    <h3 id="influences-title">Influences</h3>
+    <dl>
+      {
+        content.influences.map((influence) => (
+          <div>
+            <dt>
+              <a href={influenceLink(influence.name)}>
+                {influence.name}
+                <span aria-hidden="true">↗</span>
+                <span class="sr-only"> (external)</span>
+              </a>
+            </dt>
+            <dd>{influence.body}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>

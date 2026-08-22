@@ -1,0 +1,31 @@
+---
+interface Props {
+  content: {
+    project: { name: string; version: string };
+    links: {
+      specification: string;
+      siteRepository: string;
+      license: string;
+    };
+    licenseSummary: string;
+  };
+}
+
+const { content } = Astro.props;
+const schemaHref = `${import.meta.env.BASE_URL}schemas/0.0.1/profile.schema.json`;
+---
+
+<footer class="site-footer shell">
+  <div>
+    <p class="footer-name">{content.project.name}</p>
+    <p>{content.licenseSummary}</p>
+  </div>
+  <nav aria-label="Footer">
+    <a href={content.links.specification}
+      >Specification {content.project.version}</a
+    >
+    <a href={schemaHref}>JSON Schema</a>
+    <a href={content.links.siteRepository}>GitHub</a>
+    <a href={content.links.license}>Licensing</a>
+  </nav>
+</footer>

@@ -1,0 +1,42 @@
+---
+import ManifestExample from "./ManifestExample.astro";
+
+interface Props {
+  content: {
+    project: {
+      status: string;
+      version: string;
+      headline: string;
+      summary: string;
+    };
+    actions: { primary: string; secondary: string };
+    links: { specification: string; siteRepository: string };
+    manifest: Record<string, unknown>;
+  };
+}
+
+const { content } = Astro.props;
+---
+
+<section class="hero shell" aria-labelledby="hero-title">
+  <div class="hero-copy">
+    <p class="eyebrow">
+      {content.project.status}
+      <span aria-hidden="true">/</span>
+      {content.project.version}
+    </p>
+    <h1 id="hero-title">{content.project.headline}</h1>
+    <p class="lede">{content.project.summary}</p>
+    <div class="actions">
+      <a class="button primary" href={content.links.specification}>
+        {content.actions.primary}<span aria-hidden="true">↗</span>
+        <span class="sr-only"> (external)</span>
+      </a>
+      <a class="button secondary" href={content.links.siteRepository}>
+        {content.actions.secondary}<span aria-hidden="true">↗</span>
+        <span class="sr-only"> (external)</span>
+      </a>
+    </div>
+  </div>
+  <ManifestExample manifest={content.manifest} />
+</section>

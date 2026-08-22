@@ -1,0 +1,24 @@
+---
+import Header from "../components/Header.astro";
+import Hero from "../components/Hero.astro";
+import Influences from "../components/Influences.astro";
+import ProfileAnatomy from "../components/ProfileAnatomy.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import TrustBoundary from "../components/TrustBoundary.astro";
+import content from "../content/site.json";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Agent Profile — Open standard for portable agent profiles"
+  description={content.project.summary}
+>
+  <Header content={content} />
+  <main id="main-content">
+    <Hero content={content} />
+    <ProfileAnatomy items={content.anatomy} />
+    <TrustBoundary trust={content.trust} />
+    <Influences content={content} />
+  </main>
+  <SiteFooter content={content} />
+</BaseLayout>

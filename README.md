@@ -33,6 +33,30 @@ serve the canonical schema URI. `schemas.lock.json` binds each mirror to an exac
 specification commit and SHA-256 digest. The specification repository remains
 authoritative.
 
+To update a published schema mirror:
+
+1. Select the reviewed default-branch commit in `agent-profile-spec`.
+2. Copy the versioned schema bytes without reformatting them.
+3. Update the full 40-character commit and SHA-256 digest in
+   `schemas.lock.json`.
+4. Run `npm run verify:schema` locally.
+5. Open one reviewed change containing the pin, digest, and mirrored bytes. CI
+   checks out the exact commit and compares the source and mirror byte for byte.
+
+Never point the lock at a branch or moving tag. A digest or byte mismatch fails
+the build and Pages deployment.
+
+## Deployment
+
+GitHub Actions builds and tests pull requests without deployment permissions.
+The default branch repeats the full gate, builds with the Pages-provided base
+path, and deploys through the protected `github-pages` environment. The local
+`npm run preview` command serves only the built `dist/` tree for browser tests.
+
+Custom-domain and DNS configuration are release operations outside the code
+change. Verify the GitHub Pages URL and canonical schema response before adding
+or changing DNS for `agentprofile.org`.
+
 ## Licensing
 
 Website content and documentation are available under CC BY 4.0. Schemas,

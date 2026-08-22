@@ -1,0 +1,106 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and verify
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - name: Check out site
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Read schema lock
+        id: schema
+        shell: bash
+        run: |
+          node --input-type=module -e 'import lock from "./schemas.lock.json" with { type: "json" }; const commit = lock.commit; if (!/^[0-9a-f]{40}$/.test(commit)) process.exit(1); process.stdout.write(`commit=${commit}\n`);' >> "$GITHUB_OUTPUT"
+
+      - name: Check out specification
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: agent-profile/agent-profile-spec
+          ref: ${{ steps.schema.outputs.commit }}
+          path: .upstream/agent-profile-spec
+          persist-credentials: false
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Check Astro and TypeScript
+        run: npm run check
+
+      - name: Verify schema provenance
+        run: npm run verify:schema -- --upstream .upstream/agent-profile-spec
+
+      - name: Run unit and artifact tests
+        run: npm test
+
+      - name: Build site
+        run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser tests
+        run: npm run test:e2e
+
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Build Pages artifact
+        env:
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: npm run build
+
+      - name: Test Pages artifact
+        env:
+          TEST_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: npm run test:e2e
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist/
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0

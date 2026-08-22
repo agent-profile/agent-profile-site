@@ -1,0 +1,25 @@
+---
+import Header from "../components/Header.astro";
+import Hero from "../components/Hero.astro";
+import Influences from "../components/Influences.astro";
+import ProfileAnatomy from "../components/ProfileAnatomy.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import TrustBoundary from "../components/TrustBoundary.astro";
+import content from "../content/site.json";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title={content.meta.title}
+  description={content.project.summary}
+  skipLabel={content.labels.skipToMain}
+>
+  <Header content={content} />
+  <main id="main-content">
+    <Hero content={content} />
+    <ProfileAnatomy items={content.anatomy} labels={content.labels} />
+    <TrustBoundary trust={content.trust} labels={content.labels} />
+    <Influences content={content} />
+  </main>
+  <SiteFooter content={content} />
+</BaseLayout>

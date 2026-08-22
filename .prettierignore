@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.astro/
+playwright-report/
+test-results/
+.upstream/
+.superpowers/
+LICENSES/Apache-2.0.txt
+LICENSES/CC-BY-4.0.txt

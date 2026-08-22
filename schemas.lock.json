@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "repository": "agent-profile/agent-profile-spec",
+  "commit": "6e56a3c3e1e8684d1b280374a92d4801dababb03",
+  "files": [
+    {
+      "source": "schemas/0.0.1/profile.schema.json",
+      "target": "public/schemas/0.0.1/profile.schema.json",
+      "sha256": "6e25db7f595ed331b89f87605c3a325ce5a2aad070a8f736a3d0fd64976baaf6"
+    }
+  ]
+}

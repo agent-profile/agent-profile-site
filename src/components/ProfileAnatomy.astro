@@ -1,0 +1,31 @@
+---
+interface Item {
+  key: string;
+  label: string;
+  body: string;
+}
+
+interface Props {
+  items: Item[];
+  labels: { anatomyEyebrow: string; anatomyHeading: string };
+}
+
+const { items, labels } = Astro.props;
+---
+
+<section class="anatomy shell" aria-labelledby="anatomy-title">
+  <div class="section-heading">
+    <p class="eyebrow">{labels.anatomyEyebrow}</p>
+    <h2 id="anatomy-title">{labels.anatomyHeading}</h2>
+  </div>
+  <ol class="anatomy-list">
+    {
+      items.map((item) => (
+        <li id={`profile-${item.key}`}>
+          <h3>{item.label}</h3>
+          <p>{item.body}</p>
+        </li>
+      ))
+    }
+  </ol>
+</section>

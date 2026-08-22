@@ -1,0 +1,121 @@
+{
+  "project": {
+    "name": "Agent Profile",
+    "status": "Working Draft",
+    "version": "0.0.1",
+    "headline": "An open standard for portable agent profiles.",
+    "summary": "Agent Profile is an open, vendor-neutral standard for a portable directory package describing one durable logical AI agent. A profile can name an owner, list contact methods, associate external identifiers, and bundle Agent Plugins. Those values are metadata claims, not credentials or proof."
+  },
+  "meta": {
+    "title": "Agent Profile — Open standard for portable agent profiles"
+  },
+  "labels": {
+    "skipToMain": "Skip to main content",
+    "home": "Agent Profile home",
+    "primaryNavigation": "Primary",
+    "specification": "Specification",
+    "schema": "JSON Schema",
+    "github": "GitHub",
+    "external": " (external)",
+    "manifestFilename": "profile.json",
+    "manifestExample": "Example profile.json",
+    "anatomyEyebrow": "Profile anatomy",
+    "anatomyHeading": "What a profile describes",
+    "trustEyebrow": "Trust boundary",
+    "participateEyebrow": "Participate",
+    "influencesHeading": "Influences",
+    "footerNavigation": "Footer",
+    "licensing": "Licensing"
+  },
+  "links": {
+    "specification": "https://github.com/agent-profile/agent-profile-spec/blob/6e56a3c3e1e8684d1b280374a92d4801dababb03/spec/0.0.1.md",
+    "specRepository": "https://github.com/agent-profile/agent-profile-spec",
+    "siteRepository": "https://github.com/agent-profile/agent-profile-site",
+    "license": "https://github.com/agent-profile/agent-profile-site/blob/main/LICENSE.md",
+    "agentPlugins": "https://agent-plugins.org/",
+    "mcp": "https://modelcontextprotocol.io/",
+    "tokenCanopy": "https://tokencanopy.com/"
+  },
+  "actions": {
+    "primary": "Read the specification",
+    "secondary": "View on GitHub"
+  },
+  "manifest": {
+    "$schema": "https://agentprofile.org/schemas/0.0.1/profile.schema.json",
+    "id": "urn:uuid:7a18f6ba-22c8-4d4f-a60e-1e2e8fe4dc44",
+    "name": "Research Librarian",
+    "version": "0.1.0",
+    "description": "Organizes public research for Example Cooperative.",
+    "owner": {
+      "name": "Example Cooperative",
+      "email": "agents@example.com",
+      "url": "https://example.com/"
+    },
+    "contacts": [
+      "mailto:research@example.com",
+      "sms:+12025550123",
+      "tel:+12025550123"
+    ],
+    "identifiers": [
+      {
+        "type": "issuer-subject",
+        "issuer": "https://identity.example.com",
+        "subject": "agent_01EXAMPLE"
+      },
+      {
+        "type": "uri",
+        "value": "spiffe://example.com/agents/research"
+      }
+    ]
+  },
+  "anatomy": [
+    {
+      "key": "identity",
+      "label": "Identity",
+      "body": "A permanent absolute URI identifies one durable logical agent, not a process, installation, runtime, or session."
+    },
+    {
+      "key": "owner",
+      "label": "Owner",
+      "body": "Optional public metadata names the human or organization responsible for the agent. It does not grant authority."
+    },
+    {
+      "key": "contacts",
+      "label": "Contacts",
+      "body": "Optional URI values can describe email, SMS, telephone, or other ways to contact the agent."
+    },
+    {
+      "key": "identifiers",
+      "label": "External identifiers",
+      "body": "Optional issuer-and-subject or URI identifiers associate the profile with identities used by other systems."
+    },
+    {
+      "key": "plugins",
+      "label": "Agent Plugins",
+      "body": "A profile package may include portable capabilities under its plugins directory. Agent Plugins remains authoritative for each plugin's contents."
+    }
+  ],
+  "trust": {
+    "heading": "Metadata, not credentials.",
+    "body": "Agent Profile does not verify its claims, authenticate an agent, authorize an action, or enforce policy. Systems can reference profile metadata when building human oversight, auditing, governance, provenance, and accountability, but the profile does not provide those controls by itself."
+  },
+  "development": {
+    "heading": "Open development",
+    "body": "Agent Profile 0.0.1 is a working draft developed in public. Read the specification, inspect the schema and conformance fixtures, or open an issue on GitHub."
+  },
+  "influences": [
+    {
+      "name": "Agent Plugins",
+      "body": "Portable packages for agent capabilities."
+    },
+    {
+      "name": "Model Context Protocol",
+      "body": "Interoperable context and tool connections."
+    },
+    {
+      "name": "Token Canopy",
+      "body": "Infrastructure for accountable agent operation."
+    }
+  ],
+  "licenseSummary": "Specification prose, website content, and documentation are available under CC BY 4.0. Schemas, source code, and conformance material are available under Apache 2.0."
+}

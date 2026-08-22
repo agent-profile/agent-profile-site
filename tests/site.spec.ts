@@ -43,6 +43,45 @@ test("serves robots.txt as plain text", async ({ request }) => {
   );
 });
 
+test("serves agent discovery resources with their declared formats", async ({
+  page,
+  request,
+}) => {
+  const [sitemap, llms, markdown] = await Promise.all([
+    request.get("sitemap.xml"),
+    request.get("llms.txt"),
+    request.get("index.md"),
+  ]);
+
+  expect(sitemap.ok()).toBe(true);
+  expect(sitemap.headers()["content-type"]).toContain("application/xml");
+  expect(await sitemap.text()).toContain(
+    "<loc>https://agentprofile.org/</loc>",
+  );
+
+  expect(llms.ok()).toBe(true);
+  expect(llms.headers()["content-type"]).toContain("text/plain");
+  expect(await llms.text()).toContain("# Agent Profile");
+
+  expect(markdown.ok()).toBe(true);
+  expect(markdown.headers()["content-type"]).toContain("text/markdown");
+  expect(await markdown.text()).toContain("## Trust boundary");
+
+  await page.goto("./");
+  await expect(page.locator('link[rel="describedby"]')).toHaveAttribute(
+    "href",
+    /llms\.txt$/,
+  );
+  await expect(page.locator('link[rel="alternate"]')).toHaveAttribute(
+    "type",
+    "text/markdown",
+  );
+  await expect(page.locator('link[rel="alternate"]')).toHaveAttribute(
+    "href",
+    /index\.md$/,
+  );
+});
+
 test("does not serve through symlinked ancestor directories", async ({
   request,
 }, testInfo) => {

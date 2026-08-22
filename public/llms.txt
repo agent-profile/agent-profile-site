@@ -1,0 +1,16 @@
+# Agent Profile
+
+> Agent Profile is an open, vendor-neutral standard for a portable directory package describing one durable logical AI agent. A profile can name an owner, list contact methods, associate external identifiers, and bundle Agent Plugins. Those values are metadata claims, not credentials or proof.
+
+Version 0.0.1 is a Working Draft.
+
+## Standard
+
+- [Agent Profile overview](https://agentprofile.org/index.md): A concise Markdown introduction to the standard and its trust boundary.
+- [Specification 0.0.1](https://github.com/agent-profile/agent-profile-spec/blob/6e56a3c3e1e8684d1b280374a92d4801dababb03/spec/0.0.1.md): The normative Working Draft specification.
+- [JSON Schema 0.0.1](https://agentprofile.org/schemas/0.0.1/profile.schema.json): The versioned profile.json schema.
+
+## Project
+
+- [Specification repository](https://github.com/agent-profile/agent-profile-spec): Schemas, examples, conformance fixtures, and specification development.
+- [Website repository](https://github.com/agent-profile/agent-profile-site): Source and issue tracking for agentprofile.org.

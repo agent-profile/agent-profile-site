@@ -1,8 +1,8 @@
 # Agent Profile
 
-> Agent Profile is an open, vendor-neutral standard for a portable directory package describing one durable logical AI agent.
+> Agent Profile is an open, vendor-neutral standard for a portable directory package describing one durable logical AI agent. A profile can name an owner, list contact methods, associate external identifiers, and bundle Agent Plugins. Those values are metadata claims, not credentials or proof.
 
-Version 0.0.1 is a Working Draft. A profile can name an owner, list contact methods, associate external identifiers, and bundle Agent Plugins. Profile values are metadata claims, not credentials or proof.
+Version 0.0.1 is a Working Draft.
 
 ## Standard
 

@@ -170,8 +170,9 @@ test("all project and influence destinations are explicit HTTPS links", async ()
 });
 
 test("agent discovery files identify the canonical site and current standard", async () => {
-  const [content, robots, sitemap, llms, markdown] = await Promise.all([
+  const [content, lock, robots, sitemap, llms, markdown] = await Promise.all([
     readJson("src/content/site.json"),
+    readJson("schemas.lock.json"),
     readFile(path.join(repositoryRoot, "public/robots.txt"), "utf8"),
     readFile(path.join(repositoryRoot, "public/sitemap.xml"), "utf8"),
     readFile(path.join(repositoryRoot, "public/llms.txt"), "utf8"),
@@ -185,18 +186,71 @@ test("agent discovery files identify the canonical site and current standard", a
   assert.match(sitemap, /<loc>https:\/\/agentprofile\.org\/<\/loc>/);
   assert.equal((sitemap.match(/<url>/g) || []).length, 1);
 
-  for (const document of [llms, markdown]) {
-    assert.match(document, /^# Agent Profile$/m);
-    assert.ok(document.includes(content.project.version));
-    assert.ok(document.includes(content.project.status));
-    assert.ok(document.includes(content.links.specification));
-    assert.ok(
-      document.includes(
-        "https://agentprofile.org/schemas/0.0.1/profile.schema.json",
+  const schemaVersion = lock.files[0].source.split("/")[1];
+  const schemaUrl = `https://agentprofile.org/${lock.files[0].target.replace(/^public\//, "")}`;
+  const specificationUrl = `https://github.com/${lock.repository}/blob/${lock.commit}/spec/${schemaVersion}.md`;
+  assert.equal(content.project.version, schemaVersion);
+  assert.equal(content.manifest.$schema, schemaUrl);
+  assert.equal(content.links.specification, specificationUrl);
+
+  const links = (document) =>
+    new Map(
+      [...document.matchAll(/^- \[([^\]]+)\]\((https:[^)]+)\)/gm)].map(
+        ([, label, url]) => [label, url],
       ),
     );
+  const llmsLinks = links(llms);
+  const markdownLinks = links(markdown);
+
+  assert.equal(
+    llmsLinks.get("Agent Profile overview"),
+    "https://agentprofile.org/index.md",
+  );
+  for (const resourceLinks of [llmsLinks, markdownLinks]) {
+    assert.equal(
+      resourceLinks.get(`Specification ${schemaVersion}`),
+      specificationUrl,
+    );
+    assert.equal(resourceLinks.get(`JSON Schema ${schemaVersion}`), schemaUrl);
+    assert.equal(
+      resourceLinks.get("Specification repository"),
+      content.links.specRepository,
+    );
+    assert.equal(
+      resourceLinks.get("Website repository"),
+      content.links.siteRepository,
+    );
+  }
+
+  for (const document of [llms, markdown]) {
+    assert.match(document, /^# Agent Profile$/m);
+    assert.ok(document.includes(content.project.summary));
     assert.doesNotMatch(document, /agents\.e2a\.dev|@tokencanopy\.com/i);
   }
+
+  assert.ok(
+    llms.includes(
+      `Version ${content.project.version} is a ${content.project.status}.`,
+    ),
+  );
+  assert.ok(markdown.includes(`**Status:** ${content.project.status}`));
+  assert.ok(markdown.includes(`**Version:** ${content.project.version}`));
+
+  for (const item of content.anatomy) {
+    assert.ok(markdown.includes(`**${item.label}:** ${item.body}`));
+  }
+  assert.ok(markdown.includes(content.trust.body));
+  assert.ok(markdown.includes(content.development.body));
+  for (const influence of content.influences) {
+    assert.ok(markdown.includes(`**${influence.name}:** ${influence.body}`));
+  }
+  assert.ok(markdown.includes(content.licenseSummary));
+
+  const example = markdown.match(
+    /^## Example profile\.json\n\n```json\n([\s\S]+?)\n```$/m,
+  );
+  assert.ok(example, "Markdown alternate must contain the profile example");
+  assert.deepEqual(JSON.parse(example[1]), content.manifest);
 
   assert.match(llms, /^> Agent Profile is an open, vendor-neutral standard/m);
   assert.match(markdown, /^## Trust boundary$/m);
